@@ -68,6 +68,41 @@ def delete_task(task_id):
     print(f"Task {task_id} deleted successfully")
 
 
+def list_tasks():
+    tasks = load_tasks()
+    
+    if not tasks:
+        print("No tasks found")
+        return
+    
+    grouped_tasks = {
+        "todo": [],
+        "in-progress": [],
+        "done": []
+    }
+    
+    for task in tasks:
+        status = task.get("status", "todo")
+        if status in grouped_tasks:
+            grouped_tasks[status].append(task)
+    
+    status_labels = {
+        "todo": "📋 To Do",
+        "in-progress": "🚧 In Progress",
+        "done": "✅ Done"
+    }
+    
+    for status in ["todo", "in-progress", "done"]:
+        tasks_in_status = grouped_tasks[status]
+        if tasks_in_status:
+            print(f"\n{status_labels[status]}")
+            print("-" * 50)
+            for task in tasks_in_status:
+                print(f"  [{task['id']}] {task['description']}")
+    
+    print(f"\nTotal tasks: {len(tasks)}")
+
+
 def main():
     parser = argparse.ArgumentParser(description="Task CLI - Simple todo list manager")
     subparsers = parser.add_subparsers(dest="command", help="Available commands")
@@ -83,6 +118,8 @@ def main():
     delete_parser = subparsers.add_parser("delete", help="Delete a task")
     delete_parser.add_argument("id", type=int, help="Task ID to delete")
     
+    list_parser = subparsers.add_parser("list", help="List all tasks grouped by status")
+    
     args = parser.parse_args()
     
     if args.command == "add":
@@ -91,6 +128,8 @@ def main():
         update_task(args.id, args.description, args.status)
     elif args.command == "delete":
         delete_task(args.id)
+    elif args.command == "list":
+        list_tasks()
     else:
         parser.print_help()
 
