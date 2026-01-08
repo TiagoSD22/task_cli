@@ -55,6 +55,19 @@ def update_task(task_id, description=None, status=None):
     save_tasks(tasks)
     print(f"Task {task_id} updated successfully")
 
+
+def delete_task(task_id):
+    tasks = load_tasks()
+    new_tasks = [task for task in tasks if task["id"] != task_id]
+    
+    if len(new_tasks) == len(tasks):
+        print(f"Error: Task with ID {task_id} not found")
+        return
+    
+    save_tasks(new_tasks)
+    print(f"Task {task_id} deleted successfully")
+
+
 def main():
     parser = argparse.ArgumentParser(description="Task CLI - Simple todo list manager")
     subparsers = parser.add_subparsers(dest="command", help="Available commands")
@@ -66,6 +79,9 @@ def main():
     update_parser.add_argument("id", type=int, help="Task ID to update")
     update_parser.add_argument("-d", "--description", help="New task description")
     update_parser.add_argument("-s", "--status", help="New task status (todo, in-progress, done)")
+
+    delete_parser = subparsers.add_parser("delete", help="Delete a task")
+    delete_parser.add_argument("id", type=int, help="Task ID to delete")
     
     args = parser.parse_args()
     
@@ -73,6 +89,8 @@ def main():
         add_task(args.description)
     elif args.command == "update":
         update_task(args.id, args.description, args.status)
+    elif args.command == "delete":
+        delete_task(args.id)
     else:
         parser.print_help()
 
