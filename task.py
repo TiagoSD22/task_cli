@@ -56,6 +56,28 @@ def update_task(task_id, description=None, status=None):
     print(f"Task {task_id} updated successfully")
 
 
+def start_task(task_id):
+    tasks = load_tasks()
+    task_found = False
+    
+    for task in tasks:
+        if task["id"] == task_id:
+            task_found = True
+            if task["status"] != "todo":
+                print(f"Error: Task {task_id} is already '{task['status']}'. Only tasks in 'todo' status can be started.")
+                return
+            task["status"] = "in-progress"
+            task["updatedAt"] = datetime.now().isoformat()
+            break
+    
+    if not task_found:
+        print(f"Error: Task with ID {task_id} not found")
+        return
+    
+    save_tasks(tasks)
+    print(f"Task {task_id} started successfully")
+
+
 def delete_task(task_id):
     tasks = load_tasks()
     new_tasks = [task for task in tasks if task["id"] != task_id]
@@ -115,6 +137,9 @@ def main():
     update_parser.add_argument("-d", "--description", help="New task description")
     update_parser.add_argument("-s", "--status", help="New task status (todo, in-progress, done)")
 
+    start_parser = subparsers.add_parser("start", help="Mark a todo task as in-progress")
+    start_parser.add_argument("id", type=int, help="Task ID to start")
+
     delete_parser = subparsers.add_parser("delete", help="Delete a task")
     delete_parser.add_argument("id", type=int, help="Task ID to delete")
     
@@ -126,6 +151,8 @@ def main():
         add_task(args.description)
     elif args.command == "update":
         update_task(args.id, args.description, args.status)
+    elif args.command == "start":
+        start_task(args.id)
     elif args.command == "delete":
         delete_task(args.id)
     elif args.command == "list":
